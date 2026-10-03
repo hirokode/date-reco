@@ -78,9 +78,10 @@ Write-Host 'API の応答を確認しました' -ForegroundColor Green
 Set-Location $Root
 $cfgPath = Join-Path $Root 'config.js'
 $cfg = "// GAS ウェブアプリの /exec URL。画面が読むため公開される（共通ルール §6 の例外）`nwindow.APP_CONFIG = {`n  API_URL: `"$ApiUrl`"`n};`n"
-if ([IO.File]::ReadAllText($cfgPath, $Utf8) -ne $cfg) {
+if ([IO.File]::ReadAllText($cfgPath, $Utf8) -ne $cfg) { [IO.File]::WriteAllText($cfgPath, $cfg, $Utf8) }
+# 前回コミットに失敗していても送れるように、ファイルではなく git の状態で決める
+if (git status --porcelain -- config.js) {
   Step 'config.js に URL を入れて GitHub に送ります'
-  [IO.File]::WriteAllText($cfgPath, $cfg, $Utf8)
   git add config.js
   git commit -m 'config.js に GAS の URL を設定'
   if ($LASTEXITCODE -ne 0) { throw 'git commit に失敗しました（git config --global user.name / user.email を設定して、もう一度実行してください）' }
