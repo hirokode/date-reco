@@ -15,7 +15,8 @@ const ACTIONS = {
   updateMe: apiUpdateMe_,
   updateAlbum: apiUpdateAlbum_,
   saveTrip: apiSaveTrip_,
-  deleteTrip: apiDeleteTrip_
+  deleteTrip: apiDeleteTrip_,
+  resolveMapLink: apiResolveMapLink_
 };
 
 // 動作確認用。ブラウザで /exec を開くと {ok:true} が返る
