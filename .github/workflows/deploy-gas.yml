@@ -3,6 +3,7 @@
 #   CLASPRC_JSON      … PC の ~/.clasprc.json の中身（clasp の認証情報）
 #   GAS_SCRIPT_ID     … gas/.clasp.json の scriptId
 #   GAS_DEPLOYMENT_ID … 本番デプロイのID（/s/ と /exec に挟まれた部分）
+# 3つとも PC で setup-pc.ps1 を実行すると登録される
 name: GASにデプロイ
 
 on:
@@ -29,22 +30,28 @@ jobs:
         run: npm install -g @google/clasp@2.4.2
 
       - name: 認証情報とプロジェクト設定を作る
+        id: prep
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
           GAS_SCRIPT_ID: ${{ secrets.GAS_SCRIPT_ID }}
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
           if [ -z "$CLASPRC_JSON" ] || [ -z "$GAS_SCRIPT_ID" ] || [ -z "$GAS_DEPLOYMENT_ID" ]; then
-            echo "GitHub Secrets（CLASPRC_JSON / GAS_SCRIPT_ID / GAS_DEPLOYMENT_ID）が未登録です"; exit 1
+            # 最初の準備（setup-pc.ps1）の前は、何もせずに終わる
+            echo "::notice::GitHub Secrets（CLASPRC_JSON / GAS_SCRIPT_ID / GAS_DEPLOYMENT_ID）が未登録なのでとばしました。PC で setup-pc.ps1 を実行してください"
+            exit 0
           fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
           printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
           printf '{"scriptId":"%s","rootDir":"."}' "$GAS_SCRIPT_ID" > gas/.clasp.json
 
       - name: clasp push
+        if: steps.prep.outputs.ready == 'true'
         working-directory: gas
         run: clasp push -f
 
       - name: 既存デプロイを上書き（URLは変わらない）
+        if: steps.prep.outputs.ready == 'true'
         working-directory: gas
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}

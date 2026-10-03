@@ -67,8 +67,11 @@
 | .claude/launch.json | ローカル確認用サーバー（`python -m http.server 8123`） |
 | .github/workflows/deploy-gas.yml | gas/ の変更を main に入れると自動で push＋既存デプロイ上書き |
 | ai-rules/CODING_RULES.md | 共通ルールのコピー |
+| setup-pc.ps1 | PC での最初の準備（GAS 作成・公開・承認の案内・config.js・Secrets・Pages）。何度実行してもよい |
 
 ## デプロイ
+
+- 最初の1回だけ：PC で `setup-pc.ps1` を実行する（GAS プロジェクトの作成〜GitHub Secrets・Pages の設定まで）
 
 - 画面：main に入ると GitHub Pages に1〜2分で反映
 - サーバー：`gas/` の変更が main に入ると GitHub Actions が `clasp push` → `clasp deploy -i <本番デプロイID>` を実行
