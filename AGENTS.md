@@ -59,7 +59,7 @@
 | js/photos.js | 撮影日時の読み取り・圧縮・写真URLの組み立て（1か所） |
 | js/map.js | Leaflet の地図（レイヤー切替・クラスタ・長押し・ピン指定） |
 | config.js | GAS の `/exec` URL（API_URL）だけを書く |
-| sw.js / manifest.json / icons/ | PWA（ホーム画面追加・画像キャッシュ） |
+| sw.js / manifest.json / icons/ | PWA（ホーム画面追加・画像キャッシュ）。アイコンの元絵は icons/icon.svg（PNG はこれを Chromium で描き出したもの） |
 | gas/Code.js | doGet / doPost・API の振り分け・`setup()` |
 | gas/Api.js | 各 API の中身・トークン確認・入力チェック |
 | gas/Db.js | スプシ・Drive フォルダの自動作成と読み書き |
