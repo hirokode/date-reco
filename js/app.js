@@ -1335,6 +1335,9 @@ function viewForm(albumId, catchId, params) {
 
         <section class="card">
           <h2>場所 <span class="req">必須</span></h2>
+          <label>Googleマップのリンク <span class="muted small">（貼り付けると場所名・位置が入ります）</span>
+            <input name="gmaps_url" inputmode="url" placeholder="https://maps.app.goo.gl/…" autocomplete="off">
+          </label>
           <p class="loc-src-line" id="loc-src"></p>
           <div id="picker" class="picker-map"></div>
           <p class="muted small">地図をタップするとピンが立ちます。ピンはドラッグで動かせます。</p>
@@ -1618,7 +1621,7 @@ function viewForm(albumId, catchId, params) {
     loc = value ? { lat: Number(value.lat.toFixed(6)), lng: Number(value.lng.toFixed(6)) } : null;
     if (source) locSource = source;
     if (!loc) locSource = '';
-    locSrcEl.textContent = loc && locSource ? `位置の出どころ：${{ button: '📍「釣れた！」の記録', estimated: '推定（撮影時刻の釣行記録）', manual: '手動' }[locSource]}` : '';
+    locSrcEl.textContent = loc && locSource && locSource !== 'manual' ? `位置の出どころ：${{ button: '📍「釣れた！」の記録', estimated: '推定（撮影時刻の釣行記録）', manual: '手動' }[locSource]}` : '';
     if (!fromText) coord.value = loc ? fmtCoord(loc.lat, loc.lng) : '';
     if (loc && picker && !fromPicker) picker.set(loc);
     gmaps.href = loc ? googleMapsUrl(loc.lat, loc.lng) : '#';
@@ -1645,6 +1648,30 @@ function viewForm(albumId, catchId, params) {
     setLoc(ll, { source: 'manual' });
   });
   coord.addEventListener('paste', () => setTimeout(() => coord.dispatchEvent(new Event('change')), 0));
+  // Googleマップの共有リンク：GAS がリンクをたどって、場所名と位置を読み取る
+  const gmapsInput = form.elements.gmaps_url;
+  let gmapsLast = '';
+  async function readGmaps() {
+    const text = gmapsInput.value.trim();
+    if (!/https?:\/\//.test(text) || text === gmapsLast) return;
+    gmapsLast = text;
+    busy(true, 'Googleマップを読み取っています…');
+    try {
+      const r = await api('resolveMapLink', { token: session.token, url: text });
+      dirty = true;
+      locDecided = true;
+      setLoc({ lat: r.lat, lng: r.lng }, { source: 'manual' });
+      if (r.place_name) form.elements.place_name.value = r.place_name;
+      toast(r.place_name ? `「${r.place_name}」の場所を入れました` : '位置を入れました（場所名は読み取れませんでした）');
+    } catch (err) {
+      gmapsLast = '';
+      toast(err.code === 'bad_action' ? 'サーバーの更新中です。少し待ってからもう一度貼り付けてください' : err.message, 4000);
+    } finally {
+      busy(false);
+    }
+  }
+  gmapsInput.addEventListener('change', readGmaps);
+  gmapsInput.addEventListener('paste', () => setTimeout(readGmaps, 0));
   document.getElementById('locate-btn').addEventListener('click', async e => {
     const btn = e.currentTarget;
     btn.disabled = true;

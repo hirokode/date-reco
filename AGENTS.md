@@ -64,6 +64,7 @@
 | gas/Api.js | 各 API の中身・トークン確認・入力チェック |
 | gas/Db.js | スプシ・Drive フォルダの自動作成と読み書き |
 | gas/Photos.js | 写真の保存（EXIF などのメタデータを取り除いてから保存） |
+| gas/MapLink.js | Googleマップの共有リンクから場所名・位置を読み取る（resolveMapLink。Google マップ以外のURLは読みに行かない） |
 | .claude/launch.json | ローカル確認用サーバー（`python -m http.server 8123`） |
 | .github/workflows/deploy-gas.yml | gas/ の変更を main に入れると自動で push＋既存デプロイ上書き |
 | ai-rules/CODING_RULES.md | 共通ルールのコピー |
