@@ -1,0 +1,29 @@
+name: debug-maplink
+on:
+  push:
+    branches: ['debug/maplink']
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probe
+        run: |
+          UA='Mozilla/5.0 (compatible; Google-Apps-Script)'
+          url='https://maps.app.goo.gl/szHowFL85jmAkVW38?g_st=ic'
+          for i in 1 2 3 4 5 6; do
+            echo "== HOP $i: $url"
+            hdr=$(curl -s -o /tmp/body -D - -A "$UA" -H 'Accept-Language: ja' "$url")
+            code=$(echo "$hdr" | head -1)
+            echo "$code"
+            loc=$(echo "$hdr" | grep -i '^location:' | sed 's/^[Ll]ocation: *//' | tr -d '\r')
+            if [ -z "$loc" ]; then break; fi
+            case "$loc" in /*) loc="$(echo "$url" | grep -o '^https://[^/]*')$loc";; esac
+            url="$loc"
+          done
+          echo "== FINAL: $url"
+          python3 -c "import urllib.parse,sys; print(urllib.parse.unquote(sys.argv[1]))" "$url"
+          echo "== body bytes: $(wc -c < /tmp/body)"
+          grep -o '<meta[^>]*\(og:\|itemprop\)[^>]*>' /tmp/body | head -10
+          grep -o 'APP_INITIALIZATION_STATE=.\{0,120\}' /tmp/body | head -2
+          grep -o 'center=[^&"]*' /tmp/body | head -3
+          grep -o '<title>[^<]*' /tmp/body | head -2
