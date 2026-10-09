@@ -22,7 +22,7 @@
 | trips（シート）・trip_id | 使わない（釣行の機能は画面から外した） |
 
 - js/tide.js・js/astro.js・js/trip.js と app.js の潮表・釣行の画面はコードに残っているが、タブから外していて使わない（潮位表のデータ data/tide/ は持っていない）
-- 同じ GitHub Pages（hirokode.github.io）に Tsuri Reco もいるので、**localStorage のキーは `dr.`、キャッシュ名は `date-` で始める**（Tsuri Reco の `tr.`・`shell-`・`img-` とぶつけない）
+- 同じ GitHub Pages（hirokode.github.io）に Tsuri Reco もいるので、**localStorage のキーは `dr.`、キャッシュ名は `date-`、IndexedDB は `dr-` で始める**（Tsuri Reco の `tr.`・`shell-`・`img-` とぶつけない）
 
 ## 構成
 
@@ -58,6 +58,7 @@
 | js/api.js | GAS の呼び出し・端末（localStorage）への保存 |
 | js/photos.js | 撮影日時の読み取り・圧縮・写真URLの組み立て（1か所） |
 | js/map.js | Leaflet の地図（レイヤー切替・クラスタ・長押し・ピン指定） |
+| js/pending.js | 送信待ちの思い出（新規登録・写真の Blob ごと）を IndexedDB（`dr-pending`）に控える。送れるまで消さず、起動時・電波が戻ったとき・アプリに戻ったときに自動で送り直す |
 | config.js | GAS の `/exec` URL（API_URL）だけを書く |
 | sw.js / manifest.json / icons/ | PWA（ホーム画面追加・画像キャッシュ）。アイコンの元絵は icons/icon.svg（PNG はこれを Chromium で描き出したもの） |
 | gas/Code.js | doGet / doPost・API の振り分け・`setup()` |
@@ -99,6 +100,7 @@
 | trips | trip_id, album_id, member_id, started_at, ended_at, start_lat, start_lng, end_lat, end_lng, points, auto_ended, created_at, updated_at, deleted |
 
 - ID は UUID。削除は論理削除（deleted=true）
+- 新規の思い出も catch_id を端末で作り、saveCatch に client_id として送る（GAS は同じ ID が既にあれば作らずにそれを返す＝送り直しても二重にならない）
 - tide_events・photo_ids・icon_photo・hits・points は JSON 文字列
 - 写真は {f, t, at}（f＝原寸・t＝サムネの Drive ファイルID、at＝撮影時刻（あれば）。位置は持たない）
 - loc_source は位置の出どころ（このアプリでは manual＝手動だけ）。draft は使わない
